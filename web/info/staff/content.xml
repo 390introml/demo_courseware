@@ -1,0 +1,63 @@
+<style>
+.staffmember {
+    margin: 15px;
+    max-width: 242px;
+    width: 242px;
+    border-radius: 10px;
+    line-height:0px;
+    display: inline-block;
+}
+.staffmember img {
+    border-radius: 10px 10px 0px 0px;
+    margin-bottom: 0px;
+}
+.desc {
+    margin-top: 0px;
+    padding: 15px;
+    text-align: center;
+    background-color: red;
+    border-radius: 0px 0px 10px 10px;
+    line-height: 1.2;
+}
+.instructor > .desc {
+    background-color: #ffbf00;
+}
+.course_assistant > .desc {
+    background-color: #FFC0CB;
+}
+.ta > .desc, .uta > .desc {
+    background-color: #3fe03f;
+}
+.la > .desc {
+background-color: #5cb5ff;
+}
+</style>
+
+<center>
+
+
+<h4>Instructors</h4>
+
+<python>
+for info in _instructors:
+    do_photo(*info, role='Instructor')
+</python>
+
+<h4>Course Assistant</h4>
+
+<python>
+do_photo("Taylor Braun", "tvbraun", role='course_assistant')
+</python>
+
+<h4>TAs</h4>
+
+<python>
+for info in _tas:
+    do_photo(*info, role = 'ta')
+</python>
+
+<comment>
+<h4>LAs</h4>
+</comment>
+
+</center>

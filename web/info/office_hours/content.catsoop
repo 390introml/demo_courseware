@@ -1,0 +1,38 @@
+Office hours are an opportunity to get help with concepts or with
+particular assignments. Physical office hours will be in 32-044a
+(Stata basement). Weekly office hours will be offered at the following
+times (subject to change).
+
+You may [join the help queue here](COURSE/queue/Office_Hours) at any
+time during the hours listed below. If the office hours are physical:
+when you are requesting help/checkoff, for the location indicate a way
+for a staff member to find you in the room. If the office hours are
+virtual: when you are requesting help/checkoff, enter your own zoom
+session link as your location. (e.g. [demo](CURRENT/fromlab.gif) when
+requesting from the lab checkoff page; and
+[demo](CURRENT/directly.gif) when requesting general help from the
+help queue).
+
+**Physical office hours will not typically claim virtual
+students.**
+
+<comment>
+Dates/locations TBD.
+</comment>
+
+<ul>
+ <python>
+    skip = {
+        # "Sunday": "holiday",
+        # "Monday": "holiday",
+        # "Wednesday": "midterm",
+        # "Wednesday": "Thanksgiving",
+        # "Thursday": "Thanksgiving",
+        } 
+    for info in office_hours:
+        print(f'    <li> {info[0]}, {info[1]}, {info[2]} ')
+        if info[0] in skip:
+            print(f' -- not this week due to {skip[info[0]]}')
+        print(f'</li>')
+  </python>
+</ul>

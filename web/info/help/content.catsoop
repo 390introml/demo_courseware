@@ -1,0 +1,99 @@
+<python>
+Piazza = "[Piazza]("+ PIAZZA_LINK + ")"
+</python>
+
+
+6.390 is a challenging class, and it is totally normal to need help at various
+points as you're working through the material.  And we are happy to help you as
+questions come up!  However, 6.390 is a large class, and this makes it
+important for us to find effective ways to communicate.  Please follow the
+guidelines on this page when asking for help (and note that the best way to
+get help depends on the kind of question you have).
+
+<tableofcontents />
+
+<catsoop-section>Who (and how) Should I Ask?</catsoop-section>
+
+As a general matter of policy, please **do not e-mail individual staff
+members** unless there is a good specific reason to reach out only to
+one staff member.  We ask this not because we don't want to hear from
+you, but because there are a lot of you (and far fewer of us), and
+many questions are shared by multiple students.  Instead of e-mail,
+please use @{Piazza} or our mailing lists, which help us keep things
+organized and helps us help as many of you as possible, as efficiently
+as possible.  Here are some further guidelines for asking for help:
+
+* Before you ask your question, please start by searching the 6.390
+  web page, as well as @{Piazza}, to see if your question has already
+  been answered.
+
+* For most questions, post on @{Piazza}.
+
+    * For general questions (about course content, tech support,
+      course policies, etc.), please post publicly so others can
+      benefit from the conversation.  Examples of good topics for
+      public posts include:
+
+        * _I'm confused about (some lecture notes study questions or course policy)..._
+        * _In recitaitons/lab, we did (some example), but I didn't understand it..._
+        * _In this week's lab, can someone clarify (some unclear instructions)..._
+        * _I can't find (some 6.390-related resource)..._
+        * _I need help installing/configuring (some piece of software)..._
+
+* For questions involving code you've written for a 6.390 assignment
+  (or detailed plans for code you plan to write), please come to any
+  of our [office hours](COURSE/info/office_hours) and talk with a
+  staff member, as that is the most effective way to get help for
+  these kinds of questions.
+
+  For these kinds of questions, you can also try sending a private
+  message on the Piazza including your code, as well as a description
+  of what's going wrong and what you've tried to test/fix it.  But
+  debugging via the Piazza is generally very inefficient, and we can't
+  guarantee that we'll be able to get to all questions of this form in
+  a timely manner, so your best bet is to come to office hours.
+
+* For sensitive issues, please instead send an e-mail to <a
+  href="mailto:6.390-personal@mit.edu"><tt>6.390-personal@mit.edu</tt></a>. If
+  you've spoken to a Dean at S<sup>3</sup>, feel free to CC them.
+  Some examples of topics that should be sent via e-mail include:
+
+    * _I'm concerned about my performance in 6.390..._
+    * _I've been really sick, and I'm falling behind in the class..._
+    * _I have a disability and require accommodations in 6.390..._
+    * _I'm feeling overwhelmed and want to talk to someone on staff..._
+
+* In occasional, well-justified cases, you may switch sections for the
+  week.  To do so, please contact
+  <a href="mailto:6.390-sections@mit.edu"><tt>6.390-sections@mit.edu</tt></a>
+  *three* days in advance.
+
+
+<catsoop-section>Additional Tutoring</catsoop-section>
+
+Additional technical help may also be obtained from external
+resources, in the form of tutoring services.
+
+The MIT Department of Electrical Engineering and Computer Science
+provides one-on-one peer assistance in many basic undergraduate Course
+VI classes.  During the first nine weeks of the term, you may request
+a tutor who will meet with you for a few hours a week to aid in your
+understanding of course material. You and your tutor arrange the hours
+that you meet, for your mutual convenience. This is a free
+service. More information is available on the [HKN web
+page](https://hkn-tutoring2.mit.edu/).
+
+Additional support may also be available through the Talented Scholars
+Resource Room (TSR<sup>2</sup>), sponsored by the Office of Minority
+Education. For further information, go to [this
+page](https://ome.mit.edu/programs/talented-scholars-resource-room-tsr2).
+
+
+<catsoop-section>Illness and personal issues</catsoop-section>
+
+<include>../_illness.md</include>
+<catsoop-section>Mental Health</catsoop-section>
+<include>../_mentalhealth.md</include>
+<catsoop-section>Accommodations</catsoop-section>
+
+<include>../_accommodations.md</include>

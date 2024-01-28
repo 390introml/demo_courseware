@@ -1,0 +1,23 @@
+<python>
+cs_calendar_preview = True  # for calendar week include
+</python>
+
+<python>
+#cs_handle_section_override(cs_user_info)
+if not STAGE=="pre_semester": 
+    user_role = cs_user_info.get("role", None)
+    if user_role == "Student":
+        user_section = cs_user_info.get("section", 0)
+        if user_section:
+            s_time, s_instructor, s_room = sections[str(user_section)]
+            print(f"<b><font color='blue'>You are currently assigned to section {user_section} -- meeting Mon/Wed at {s_time} in room {s_room}.</font></b>")
+            cs_handle_section_override(cs_user_info)
+            override_section = cs_user_info.get("section", user_section)
+            if override_section != user_section:
+                s_time, s_instructor, s_room = sections[str(override_section)]
+                print(f"<br><b><font color='red'>You have an active temporary section override, into section {override_section} -- meeting Mon/Wed at {s_time} in room {s_room}.</font></b>")
+        else:
+            print(f"<b><font color='red'>You are currently not assigned to any Mon/Wed section. Please come to one of sections 1, 3, 5, or 7.</font></b>")
+</python>
+
+<include>announcements/_presemester.md</include>

@@ -1,0 +1,619 @@
+<todo>
+- check release/due dates
+</todo>
+
+
+<div class="tab">
+  <button class="tablinks active" onclick="openTab(event, 'Tab1')">List View</button>
+  <button class="tablinks" onclick="openTab(event, 'Tab3')">Table View</button>
+  <button class="tablinks" onclick="openTab(event, 'Tab2')">Google Calendar</button>
+</div>
+
+<div id="Tab1" class="tabcontent", style="display:block">
+<python>
+if not cs_calendar_preview:
+    print("""The calendar below will be populated throughout the semester with 
+             links to notes, lectures, recitations, labs, and homeworks.  The 
+             current week is highlighted vertically in blue.""")
+
+import os
+from datetime import datetime, timedelta
+
+recitation_soln_root = "COURSE/47!P36AbVyt6o49oB9tb^rHiN"
+
+topic_display_names = {
+    "intro": "Intro to ML",
+    "regression": "Analytical Regression",
+    "gd": "Gradient Descent",
+    "classification": "Linear Classifiers and Logistic Regression",
+    "features": "Features",
+    "clustering": "Clustering",
+    "nn": "Neural Networks",
+    "nn2": "Neural Networks II",
+    "autoencoder": "Autoencoders",
+    "cnn": "Convolutional Neural Networks",
+    "rnn": "Recurrent Neural Networks",
+    "transformers": "Transformers",
+    "mdp": "Markov Decision Processes",
+    "rl": "Reinforcement Learning",
+    "tree": "Decision Trees and Nearest Neighbors", 
+    "wrapup": "End of term wrapup",
+}
+
+notes_by_topic = {
+    "overview": ("6390_intro.pdf", "Course Overview Slides"),
+    "intro": ("chapter_Introduction.pdf", "Chap. 1"),
+    "regression start": ("chapter_Regression.pdf", "Chap. 2 up to 2.4"),
+    "matrix": ("chapter_Matrix_derivative_common_cases.pdf", "Appendix A - Matrix derivations"),
+    "regression": ("chapter_Regression.pdf", "Chap. 2"),
+    "gd": ("chapter_Gradient_Descent.pdf", "Chap. 3"),
+    "classification": ("chapter_Classification.pdf", "Chap. 4"),
+    "features": ("chapter_Feature_representation.pdf", "Chap. 5"),
+    "clustering": ("chapter_Clustering.pdf", "Chap. 6"),
+    "nn": ("chapter_Neural_Networks.pdf", "Chap. 7 up to 7.5"),
+    "nn2": ("chapter_Neural_Networks.pdf", "Chap. 7 to end"),
+    "autoencoder": ("chapter_Autoencoders.pdf", "Chap. 8"),
+    "cnn": ("chapter_Convolutional_Neural_Networks.pdf", "Chap. 9"),
+    "rnn": ("chapter_Recurrent_Neural_Networks.pdf", "Chap. 10 up through 10.4"),
+    "transformers": ("chapter_Transformers_and_large_language_models.pdf", "Chap. 11"),
+    "mdp": ("chapter_Markov_Decision_Processes.pdf", "Chap. 12"),
+    "rl": ("chapter_Reinforcement_learning.pdf", "Chap. 13"),
+    "tree": ("chapter_Non-parametric_methods.pdf", "Chap. 14"),
+    "wrapup": ("Pro-Worker-AI-Policy-Memo.pdf", "Pro-Worker AI Policy Memo (guest lecture reading)"),
+}
+
+recordings_by_topic = {
+    "regression": "https://video.odl.mit.edu/videos/de61e308b431418da69a43f347f5d831/",
+    "gd": "https://video.odl.mit.edu/videos/b776db250af845a4a61f05dbd48b0b4d/",
+    "classification": "https://video.odl.mit.edu/videos/dc15c081824948bc9361df77ee43de77/",
+    "features": "https://video.odl.mit.edu/videos/a4c390d6f9214d5288c78d595b0c33bb/",
+    "nn": "https://video.odl.mit.edu/videos/4aa89ab8714f44748be9ee82a21f2ac9/",
+    "midterm review": "https://video.odl.mit.edu/videos/87d4ad978a6443cda9ac8f1ae774e2dd/",
+    "nn2": "https://video.odl.mit.edu/videos/8c2e7d91537f48ebbea4226dc094dd26/",
+    "cnn": "https://video.odl.mit.edu/videos/1cd803a0d2c9490ab6cbf0b3fbed4f80/",
+    "tree": "https://video.odl.mit.edu/videos/278812a4d6a04826b6be83da6467db1c/",
+    "clustering": "https://video.odl.mit.edu/videos/c9476ac78d96453a88a9831da089926b/",
+    "mdp": "https://video.odl.mit.edu/videos/86ccc3f9691141ebb316a56beac37f1a/",
+    "rl": "https://video.odl.mit.edu/videos/22977f02e9294410b5c11d0536d3b903/",
+    "rnn": "https://video.odl.mit.edu/videos/7464527c4cc144cf866714809b69c077/",
+    "wrapup": "https://mit.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=65bf8223-82fa-4f1b-bdc8-b0d0010d0b59",
+}
+
+
+def do_info(year, notes):
+    print(f'<div style="position: absolute; left: 65%; top: 50%; transform: translateY(-50%);">')
+    print(f'<b>Notice{"s" if len(notes) > 1 else ""}:</b><br/>')
+    for month, day, note in notes:
+        print(f'{format_date(datetime(year, month, day), time=False)}: {note}<br/>')
+    print(f'</div>')
+    print()
+
+def make_link(wknint, path, text):
+    """
+    wknint = (int) week number
+    path = (str) homework/hw
+    text = (str) link anchor
+    """
+    fpath = path + ("%02d" % wknint)
+    if path.startswith("lecture"):
+        return "<font color='purple'>%s</font>" % text
+    return '<a href="COURSE/%s" target=_blank>%s</a>' % (fpath, text)
+
+
+START = csm_time.realize_time(globals(), cs_first_monday)
+CURRENT = datetime.now()
+#CURRENT = START + timedelta(days=7)  # Testing
+
+CUR_WEEK = (((CURRENT - START).days + 2) // 7) + 1
+#WEEK_OFFSET = 1  # before thanksgiving/spring-break
+WEEK_OFFSET = 2  # after thanksgiving/spring-break
+# day = int((CURRENT - (START + timedelta(days=7) * (week - 1))).days)
+# hour = CURRENT.hour
+
+role = cs_user_info.get("role", None)
+do_staff = role in ("TA", "UTA", "Instructor", "Admin", "LA")
+do_student = role == "Student"
+do_la = role == "LA"
+
+print(
+    """
+<style>
+    table{
+        border-collapse: collapse;
+        border: 1px solid black;
+    }
+
+    th,td{
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    .cancel {
+        background: repeating-linear-gradient(
+            -45deg,
+            #ffffff,
+            #ffffff 10px,
+            #f0f0f0 10px,
+            #f0f0f0 10px 20px
+        );
+    }
+
+</style>"""
+)
+
+
+def format_date(x, time=True):
+    return x.strftime("%a, %-d %b") + (
+        x.strftime(" at %-I:%M%p").lower() if time else ""
+    )
+
+
+def do_exam(calendar_weeknum, exam_title, link_to_info=None, link_to_grades=None, date=None):
+    MONDAY = START + ((calendar_weeknum - 1) * timedelta(days=7))
+    FRIDAY = MONDAY + timedelta(days=4)
+
+    highlight = CUR_WEEK == calendar_weeknum or calendar_weeknum == 0 and CUR_WEEK <= 0
+    is_next_week = (CUR_WEEK + 1 == calendar_weeknum) or (CUR_WEEK + 2 == calendar_weeknum)
+
+    # For showing previous, CURRENT (highlighted) and next week on announcements page.
+    # In the case of exames, show next week but not last week if it was a exam.
+    if cs_calendar_preview and not highlight and not is_next_week:
+        return
+
+    if date is None:
+        date = format_date(MONDAY + timedelta(days=2, hours=19, minutes=30), time=True)
+    elif isinstance(date, str):
+        pass
+    elif isinstance(date, datetime):
+        date = format_date(date, time=True)
+
+    print(
+        f'<div class="callout callout-{"note" if highlight else "warning"}"><div class="callout-title">{exam_title} Week ({format_date(MONDAY, False)} - {format_date(FRIDAY, False)})</div>'
+    )
+    print("<br>")
+
+    print(f"<b><u>{exam_title}</u></b>: {date}</u></b>")
+
+    if link_to_info is not None:
+        print('<br>')
+        print(f'<b><a href="COURSE/{link_to_info}">Information and Practice Materials</a></b>')
+
+    if link_to_grades is not None:
+        print()
+        print(f'<b><a href="COURSE/{link_to_grades}">Scores and Statistics</a></b>')
+
+    print("</div>")
+
+    print()
+    print()
+
+
+def do_break(calendar_weeknum, text):
+    MONDAY = START + ((calendar_weeknum - 1) * timedelta(days=7))
+    FRIDAY = MONDAY + timedelta(days=4)
+
+    highlight = CUR_WEEK == calendar_weeknum or calendar_weeknum == 0 and CUR_WEEK <= 0
+    is_next_week = CUR_WEEK + 1 == calendar_weeknum
+
+    # For showing previous, current (highlighted) and next week on announcements page.
+    # In the case of breaks, show next week but not last week if it was a exam.
+    if cs_calendar_preview and not highlight and not is_next_week:
+        return
+
+    print(
+        f'<div style="background-color: #eee;" class="callout callout-{"note" if highlight else ""}"><div class="callout-title">{text} ({format_date(MONDAY, False)} - {format_date(FRIDAY, False)})</div>'
+    )
+    print("</div>")
+    print()
+
+
+recitations_dir = os.path.join(
+    cs_data_root, "courses", cs_course, "__STATIC__", "recitations"
+)
+
+
+def get_dates(assign_type, assign_prefix, weeknum):
+    """ Look at the catsoop directories for the assignment, to get release and due dates """
+    _never = cs_realize_time(globals(), "NEVER")
+
+    assign_ctx = csm_loader.generate_context([cs_course, assign_type, f"{assign_prefix}{weeknum:02d}"])
+    try:
+        release = cs_realize_time(globals(), assign_ctx["cs_release_date"])
+    except:
+        release = _never
+        #release = cs_realize_time(globals(), f"release_{assign_prefix}{weeknum:02d}")
+
+    try:
+        due = cs_realize_time(globals(), assign_ctx["cs_due_date"])
+    except:
+        due = _never
+        #due = cs_realize_time(globals(), f"{assign_prefix}{weeknum:02d}_due")
+
+    return release, due
+
+
+def do_week(
+        weeknum,  # content week; usually don't count midterm week as a content week
+        calendar_weeknum,  # weeknum into the semester
+        additional_info = None,
+        topic = [],    # topic keys
+        topic_name = None, # Override if present
+        notes = [],      # keys into notes_by_topic[] dictionary
+        lec_videos = [], # keys into slides_by_topic[] dictionary
+        lec_slides = [], # keys into videos_by_topic[] dictionary
+        rec_slides = [],
+        recitation = False,
+        exercises = False,
+        lab = False,
+        homework = False,
+):
+
+    _never = cs_realize_time(globals(), "NEVER")
+
+    ex_out, ex_due = get_dates('exercises', 'ex', weeknum)
+    lab_out, lab_due = get_dates('labs', 'lab', weeknum)
+    hw_out, hw_due = get_dates('homework', 'hw', weeknum)
+    rec_out = cs_realize_time(globals(), f"rec_attendance_start:{calendar_weeknum}")
+
+    DUE_COLOR = "red"
+    INFO_COLOR = "blue"
+
+    MONDAY = START + ((calendar_weeknum - 1) * timedelta(days=7))
+    WEDNESDAY = MONDAY + timedelta(days=2)
+    FRIDAY = MONDAY + timedelta(days=4)
+
+    #CUR_WEEK = 4 #debug
+    highlight = CUR_WEEK == calendar_weeknum or calendar_weeknum == 1 and CUR_WEEK <= 1
+    is_next_week = CUR_WEEK + 1 == calendar_weeknum
+    #is_last_week = CUR_WEEK - 1 == calendar_weeknum
+    #is_last_week = (CUR_WEEK - 1 == calendar_weeknum) or (CUR_WEEK - 2 == calendar_weeknum) # for just week after midterm
+    is_last_week = False # just for last week of class
+    show_links = do_staff or do_la or highlight or CUR_WEEK >= calendar_weeknum - 1
+  
+    # For showing previous, current (highlighted) and next week on announcements page.
+    if cs_calendar_preview and not highlight and not is_last_week and not is_next_week:
+        return
+
+    if topic_name is None and topic:
+        topic_name = ", ".join([topic_display_names[t] for t in topic])
+
+    print(
+        f'<div class="callout callout-{"note" if highlight else "grey"}"><div class="callout-title">Week {weeknum} ({format_date(MONDAY, False)} - {format_date(FRIDAY, False)})<br>{topic_name}</div>'
+    )
+
+    notes_links = []
+    for note in notes:
+        pdf, name = notes_by_topic[note]
+        if show_links:
+            notes_links.append(f'<a href="COURSE/LectureNotes/{pdf}" target=_blank>{name}</a>')
+        else:
+            notes_links.append(f'{name}')
+    if notes_links:
+        print("<br>")
+        print(f"<b><u>Notes</u>:&nbsp; {', '.join(notes_links)}</b>")
+
+    videos_links = []
+    for video in lec_videos:
+        if show_links:
+            videos_links.append(f'<a href={recordings_by_topic[video]} target=_blank>video</a>')
+        else:
+            videos_links.append(f'video')
+    slides_links = []
+    for num, slide in enumerate(lec_slides):
+        this_num = f'_{num+1}' if num > 0 else ""
+        if show_links:
+            slides_links.append(f'<a href="COURSE/VideoSlides/{slide}.pdf" target=_blank>slides{this_num}</a>')
+        else:
+            slides_links.append(f'slides{this_num}')
+    if videos_links or slides_links:
+        print("<br>")
+        print(f"<b><u>Lecture</u>: {', '.join(videos_links + slides_links)}</b>")
+
+    exercise_links = []
+    if exercises:
+        if show_links:
+            lnk = make_link(weeknum, "exercises/ex", "online")
+        else:
+            lnk = "online"
+        print("<br>")
+        print(f"<b><u>Exercises</u>: {lnk}</b>")
+        if weeknum >= CUR_WEEK - WEEK_OFFSET:
+            due_font = f" color={DUE_COLOR}" if ex_out <= CURRENT <= ex_due else ""
+            print(f"<br>&nbsp;&nbsp; Released: {format_date(ex_out)}")
+            print(f"<br>&nbsp;&nbsp; <font {due_font}>Due: {format_date(ex_due)}</font>")
+    else:
+        print("<br>No Exercises")
+
+    rec_links = []
+    show_rec_links = do_staff or do_la or CUR_WEEK > calendar_weeknum or CURRENT >= rec_out
+    if recitation:
+        if weeknum==1:
+            rec_links.append(f'<a href="COURSE/intro_slides.pdf" target=_blank>slides</a>') 
+        if show_rec_links:
+            #rec_links.append(f'<a href="COURSE/RecitationHandouts/recitation{weeknum:02d}.pdf" target=_blank>handout</a>')
+            rec_links.append(f'<a href="COURSE/recitations/rec{weeknum:02d}/recitation{weeknum:02d}.pdf" target=_blank>handout</a>')
+        else:
+            rec_links.append(f'handout')
+        if do_staff:
+            #rec_links.append(f'<a href="{recitation_soln_root}/recitation{weeknum:02d}_staff.pdf" target=_blank>staff_solution</a> ')
+            rec_links.append(f'<a href="COURSE/recitations/rec{weeknum:02d}/solutions/recitation{weeknum:02d}_staff.pdf" target=_blank>staff_solution</a> ')
+    # for rec_slide in rec_slides:
+    #     if show_rec_links:
+    #         rec_links.append(f'<a href="COURSE/RecitationHandouts/{rec_slide}.pdf">slides</a>')
+    #     else:
+    #         rec_links.append(f'slides')
+
+    if rec_links:
+        print("<br>")
+        print(f"<b><u>Recitation</u>: {', '.join(rec_links)}</b>")
+        if weeknum >= CUR_WEEK - WEEK_OFFSET:
+            print("<br>&nbsp;&nbsp; Start:", format_date(rec_out))
+            if show_rec_links:
+                pass
+                #print(f'&nbsp;&nbsp; <b><a href="COURSE/homework/hw{weeknum:02d}">attendance</a></b>')
+                #print(f'&nbsp;&nbsp; <b><a href="COURSE/recitations/rec{weeknum:02d}">attendance</a></b>')
+            else:
+                pass
+                #print(f'&nbsp;&nbsp; <b>attendance</b>')
+    else:
+        print("<br>No Recitation")
+
+    lab_links = []
+    if lab:
+        if show_links:
+            lnk = make_link(weeknum, "labs/lab", "in class")
+        else:
+            lnk = "in class"
+        print("<br>")
+        print(f"<b><u>Lab</u>: {lnk}</b>")
+        if weeknum >= CUR_WEEK - WEEK_OFFSET:
+            due_font = f" color={DUE_COLOR}" if lab_out <= CURRENT <= lab_due else ""
+            print(f"<br>&nbsp;&nbsp; Released: {format_date(lab_out)}")
+            print(f"<br>&nbsp;&nbsp; <font {due_font}>Due: {format_date(lab_due)}</font>")
+    else:
+        print("<br>No Lab")
+
+    homework_links = []
+    if homework:
+        if show_links:
+            lnk = make_link(weeknum, "homework/hw", "online")
+        else:
+            lnk = "online"
+        print("<br>")
+        print(f"<b><u>Homework</u>: {lnk}</b>")
+        #if weeknum >= CUR_WEEK - 2: # just week after midterm
+        if weeknum >= CUR_WEEK - WEEK_OFFSET:
+            due_font = f" color={DUE_COLOR}" if hw_out <= CURRENT <= hw_due else ""
+            print(f"<br>&nbsp;&nbsp; Released: {format_date(hw_out)}")
+            print(f"<br>&nbsp;&nbsp; <font {due_font}>Due: {format_date(hw_due)}</font>")
+    else:
+        print("<br>No Homework")
+
+    print("</div>")
+
+
+do_week(
+    1,
+    1,
+    additional_info = [(2,5,"First class")],
+    topic = ["intro"],
+    notes = ["intro", "regression start"],
+    lab = True,
+    recitation = True,
+    homework = True,
+)
+
+do_week(
+    2,
+    2,
+    topic = ["regression"],
+    notes = ["regression", "matrix"],
+    lec_videos = ["regression"],
+    lec_slides = ["regression"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    3,
+    3,
+    topic = ["gd"],
+    notes = ["gd"],
+    lec_videos = ["gd"],
+    lec_slides = ["gd", "Intro_ML_LecRec3"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    4,
+    4,
+    topic = ["classification"],
+    notes = ["classification"],
+    lec_videos = ["classification"],
+    lec_slides = ["classification", "Intro_ML_LecRec4"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    5,
+    5,
+    additional_info = [(3,8, "Add Date")],
+    topic = ["features"],
+    notes = ["features"],
+    lec_videos = ["features"],
+    lec_slides = ["features", "Intro_ML_LecRec5"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    6,
+    6,
+    topic = ["clustering"],
+    notes = ["clustering"],
+    lec_videos = ["clustering"],
+    lec_slides = ["clustering", "Intro_ML_LecRec12"], # To-do: rename/remove LecRec slides
+    exercises = True,
+    recitation = False,
+    lab = True,
+    homework = True,
+)
+
+#do_exam(7, "Midterm Exam")
+do_exam(7, "Midterm Exam", link_to_info="midterm")
+
+do_break(8, "Spring Break")
+
+do_week(
+    7,
+    9,
+    topic = ["nn"],
+    notes = ["nn"],
+    lec_videos = ["nn"],
+    lec_slides = ["nn", "Intro_ML_LecRec6"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+
+do_week(
+    8,
+    10,
+    topic = ["autoencoder","nn2"],
+    notes = ["autoencoder","nn2"],
+    lec_videos = ["nn2"],
+    lec_slides = ["nn"], # no nn2 slides
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    9,
+    11,
+    topic = ["cnn"],
+    notes = ["cnn"],
+    lec_videos = ["cnn"],
+    lec_slides = ["cnn"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+
+do_week(
+    10,
+    12,
+    additional_info = [(4,23,"Drop Date")],
+    topic = ["rnn", "transformers"],
+    notes = ["rnn", "transformers"],
+    lec_videos = ["rnn"],
+    lec_slides = ["rnn"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    11,
+    13,
+    topic = ["mdp"],
+    notes = ["mdp"],
+    lec_videos = ["mdp"],
+    lec_slides = ["mdp"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    12,
+    14,
+    topic = ["rl"],
+    notes = ["rl"],
+    lec_videos = ["rl"],
+    lec_slides = ["rl"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = True,
+)
+
+do_week(
+    13,
+    15,
+    additional_info = [(5,10,"Last Due Date")],
+    topic = ["tree"],
+    notes = ["tree"],
+    lec_videos = ["tree"],
+    lec_slides = ["tree"],
+    exercises = True,
+    recitation = True,
+    lab = True,
+    homework = False,
+)
+
+
+do_exam(
+  16, "Final Exam",
+  date = "TBD by Registrar",
+  link_to_info = "final",
+)
+
+
+if not cs_calendar_preview:
+    print("""
+<p><br>
+Batch download/materials:
+
+<ul>
+<li>
+ <a href="COURSE/LectureNotes/6_390_lecture_notes_spring24.pdf">Complete Lecture Notes Draft</a>&nbsp;- Note that chapters are subject to change week by week.
+<li>
+ <a href="https://video.odl.mit.edu/collections/7dff55bd237740ed97caf6b8431c2f1c/">Fall 2021 Videos</a> and
+ <a href="COURSE/Fall21Slides.zip">Slides</a>&nbsp;- Note that these are unedited from fall21; they do not perfectly align with our current offering.
+</ul>
+""")
+
+</python>
+</div>
+
+<div id="Tab2" class="tabcontent" style="display:none;">
+<select id="calendarSelect" onchange="changeCalendar()">
+  <option value="https://calendar.google.com/calendar/embed?src=dbdf9560ea4dd0e2c85e8bd87a3d7cbde7dc05d013f2a308c0bfa8a6980c6ff5%40group.calendar.google.com&ctz=America%2FNew_York&mode=WEEK">Section 1</option>
+  <option value="https://shenshen.mit.edu/tree">Test change</option>
+</select>
+
+<iframe id="calendarFrame" src="https://calendar.google.com/calendar/embed?src=dbdf9560ea4dd0e2c85e8bd87a3d7cbde7dc05d013f2a308c0bfa8a6980c6ff5%40group.calendar.google.com&ctz=America%2FNew_York&mode=WEEK" style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+
+<script>
+    function changeCalendar() {
+      var calendarUrl = document.getElementById("calendarSelect").value;
+      document.getElementById("calendarFrame").src = calendarUrl;
+    }
+  </script>
+</div>
+
+
+
+<div id="Tab3" class="tabcontent" style="display:none;">
+<div class="iframe-container">
+<iframe id="googlesheet" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8M8gFUCj4C5w3_2ZbxH75N9NL1KXCEiTykO2W3swazSJWXr2Kju6gu9wXp9AUwOygdwwu4rg2n7lr/pubhtml?gid=1769590241&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+</div>
+</div>
